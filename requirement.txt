@@ -1,0 +1,41 @@
+## Design Decisions
+
+- You are to come up with your own database schema
+- You may use SQLite
+- You will need to use background processing. Horizon recommended.
+    - You may just use Redis for the queue
+
+### Requirements
+
+- UI must have a button for users to upload the file.
+- UI must have a list of all the recent uploads, including upload time and upload status.
+    - You don’t have to do any pagination here.
+- UI should refresh in real-time the upload status
+    - You may choose to poll or use WebSockets. Your choice.
+- Bonus point if you used transformers for the endpoint.
+
+## CSV Upload / Parsing Requirements
+
+Here is the CSV file format.
+
+Field
+UNIQUE_KEY
+PRODUCT_TITLE
+PRODUCT_DESCRIPTION
+STYLE#
+SANMAR_MAINFRAME_COLOR
+SIZE
+COLOR_NAME
+PIECE_PRICE
+
+### Requirements:
+
+- You must clean up any non-UTF-8 characters
+- The file upload must be idempotent.
+    - Meaning the user should be able to upload the same file many times without creating duplicate entries.
+- The file should also be able to UPSERT the entry.
+    - For example, the user can make minor edits to the row (like PIECE_PRICE) and upload the file back into the system.
+    - Your code should be able to handle updating the affected rows instead of creating a new row - use UNIQUE_KEY.
+    - Test files provided
+- Use background processing/workers to process the file upload.
+    - I.e., every time a user files upload, you will schedule a job to process that file in the background.
