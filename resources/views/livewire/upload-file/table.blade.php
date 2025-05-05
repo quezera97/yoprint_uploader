@@ -28,7 +28,7 @@
                         {{ $loop->iteration }}
                     </td>
                     <td class="px-6 py-4">
-                        {{ $file->created_at }}
+                        {{ $file->time }}
                     </td>
                     <td class="px-6 py-4">
                         {{ $file->file_name }}

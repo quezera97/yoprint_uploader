@@ -11,6 +11,18 @@ class Table extends Component
     public $count = 0;
     public $uploadedFile = [];
 
+    protected function transformUploadedFile($file)
+    {
+        $differenceTime = $file->created_at->diffForHumans();
+
+        return [
+            'id' => $file->id,
+            'time' => $file->created_at->format('d/m/Y h:i A') . ' (' . $differenceTime . ')',
+            'file_name' => $file->file_name,
+            'status' => $file->status,
+        ];
+    }
+
     public function mount()
     {
         CheckRedisQueue::dispatch();
@@ -24,6 +36,9 @@ class Table extends Component
 
     public function refreshUploadedFile()
     {
-        $this->uploadedFile = UploadFile::get();
+        $files = UploadFile::all();
+        $this->uploadedFile = $files->map(function ($file) {
+            return $this->transformUploadedFile($file);
+        });
     }
 }
