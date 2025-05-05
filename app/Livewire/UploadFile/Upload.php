@@ -6,6 +6,7 @@ use App\Enums\FileStatus;
 use App\Imports\ProductsImport;
 use App\Jobs\ImportProductsJob;
 use App\Models\UploadFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -33,6 +34,8 @@ class Upload extends Component
         $path = $this->uploadedFile->store('uploads', 'public');
 
         try {
+            DB::beginTransaction();
+
             $uploadFile = UploadFile::create([
                 'file_name' => $this->uploadedFile->getClientOriginalName(),
                 'status' => FileStatus::PENDING->value,
@@ -43,7 +46,13 @@ class Upload extends Component
             ImportProductsJob::dispatch(storage_path('app/public/' . $path), $uploadFile);
             // unlink(storage_path('app/public/' . $path));
 
+            DB::commit();
+
+            $this->uploadedFile = null;
+
         } catch (\Exception $e) {
+            DB::rollback();
+
             Log::error('Upload/import failed: ' . $e->getMessage());
 
             if (!isset($uploadFile)) {

@@ -4,6 +4,7 @@ namespace App\Livewire\UploadFile;
 
 use App\Jobs\CheckRedisQueue;
 use App\Models\UploadFile;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class Table extends Component
@@ -36,5 +37,25 @@ class Table extends Component
         $this->uploadedFile = $files->map(function ($file) {
             return $this->transformUploadedFile($file);
         });
+    }
+
+    public function deleteUploadedFile($id)
+    {
+        $uploadedFile = UploadFile::find($id);
+
+        try {
+            DB::beginTransaction();
+
+            if($uploadedFile) {
+                unlink(storage_path('app/public/' . $uploadedFile->file_path));
+                $uploadedFile->delete();
+
+                DB::commit();
+            }
+        } catch (\Throwable $th) {
+            DB::rollback();
+            throw $th;
+        }
+
     }
 }

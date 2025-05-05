@@ -11,13 +11,14 @@ use Maatwebsite\Excel\Row;
 use Maatwebsite\Excel\Concerns\OnEachRow;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
-
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Events\AfterImport;
 
 // use OnEachRow to validate, skip row, update or create
 // use ToModel if no custom logic involved
 // class ProductsImport implements ToModel, WithHeadingRow, WithChunkReading
 
-class ProductsImport implements OnEachRow, WithHeadingRow, WithChunkReading, ShouldQueue
+class ProductsImport implements OnEachRow, WithHeadingRow, WithChunkReading, ShouldQueue, WithEvents
 {
     protected $uploadedFile;
 
@@ -70,10 +71,22 @@ class ProductsImport implements OnEachRow, WithHeadingRow, WithChunkReading, Sho
             ['uuid' => $productData['uuid']],
             $productData
         );
+    }
 
-        $this->uploadedFile->update([
-            'status' => FileStatus::COMPLETED->value,
-        ]);
+    public function chunkSize(): int
+    {
+        return 1000;
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterImport::class => function(AfterImport $event) {
+                $this->uploadedFile->update([
+                    'status' => FileStatus::COMPLETED->value,
+                ]);
+            },
+        ];
     }
 
     public function failed(\Throwable $th)
@@ -83,10 +96,5 @@ class ProductsImport implements OnEachRow, WithHeadingRow, WithChunkReading, Sho
         $this->uploadedFile?->update([
             'status' => FileStatus::FAILED->value,
         ]);
-    }
-
-    public function chunkSize(): int
-    {
-        return 1000;
     }
 }
