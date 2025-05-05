@@ -24,7 +24,6 @@ class Table extends Component
 
     public function mount()
     {
-        // CheckRedisQueue::dispatch();
         $this->refreshUploadedFile();
     }
 

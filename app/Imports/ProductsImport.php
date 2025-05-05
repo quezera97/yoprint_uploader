@@ -3,14 +3,24 @@
 namespace App\Imports;
 
 use App\Models\Product;
-use App\Models\User;
-use Illuminate\Support\Facades\Log;
-use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Row;
+use App\Models\UploadFile;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Maatwebsite\Excel\Concerns\OnEachRow;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 
-class ProductsImport implements ToModel, WithHeadingRow, WithChunkReading
+// use OnEachRow to validate, skip row, update or create
+// use ToModel if no custom logic involved
+// class ProductsImport implements ToModel, WithHeadingRow, WithChunkReading
+class ProductsImport implements OnEachRow, WithHeadingRow, WithChunkReading, ShouldQueue
 {
+    protected $uploadedFile;
+
+    public function __construct(UploadFile $uploadedFile)
+    {
+        $this->uploadedFile = $uploadedFile;
+    }
 
     private function checkExist($row, $key)
     {
@@ -21,15 +31,15 @@ class ProductsImport implements ToModel, WithHeadingRow, WithChunkReading
         return false;
     }
 
-    /**
-     * Map the rows of the CSV to your database model
-     *
-     * @param array $row
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
-
-    public function model(array $row)
+    private function cleanNonUTF8Char($value)
     {
+        return mb_convert_encoding($value, 'UTF-8', 'UTF-8');
+    }
+
+    public function onRow(Row $row)
+    {
+        $row = $row->toArray();
+
         $keyPair = [
             'uuid' => 'unique_key',
             'title' => 'product_title',
@@ -40,13 +50,25 @@ class ProductsImport implements ToModel, WithHeadingRow, WithChunkReading
             'color' => 'color_name',
             'price_per_piece' => 'piece_price',
         ];
+
         $productData = [];
 
         foreach ($keyPair as $attribute => $key) {
-            $productData[$attribute] = $this->checkExist($row, $key) ? $row[$key] : null;
+            $productData[$attribute] = $this->checkExist($row, $key)
+                ? $this->cleanNonUTF8Char($row[$key])
+                : null;
         }
 
-        return new Product($productData);
+        if (empty($productData['uuid'])) {
+            return;
+        }
+
+        $productData['upload_file_id'] = $this->uploadedFile->id ?? null;
+
+        Product::updateOrCreate(
+            ['uuid' => $productData['uuid']],
+            $productData
+        );
     }
 
     /**

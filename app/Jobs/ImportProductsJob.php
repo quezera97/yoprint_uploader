@@ -41,7 +41,9 @@ class ImportProductsJob implements ShouldQueue
                 'status' => FileStatus::PROCESSING->value,
             ]);
 
-            Excel::import(new ProductsImport, $this->filePath);
+            // Excel::import(new ProductsImport($uploadedFile), $this->filePath);
+            // using queue, so use queueimport
+            Excel::queueImport(new ProductsImport($uploadedFile), $this->filePath);
 
             $uploadedFile?->update([
                 'status' => FileStatus::COMPLETED->value,
