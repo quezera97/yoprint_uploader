@@ -12,11 +12,9 @@ class Table extends Component
 
     protected function transformUploadedFile($file)
     {
-        $differenceTime = $file->created_at->diffForHumans();
-
         return [
             'id' => $file->id,
-            'time' => $file->created_at->format('d/m/Y h:i A') . ' (' . $differenceTime . ')',
+            'time' =>  $file->timeDiff(),
             'file_name' => $file->file_name,
             'status' => $file->status,
         ];

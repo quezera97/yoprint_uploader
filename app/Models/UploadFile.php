@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\TrackActionWithoutSoftDelete;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -18,6 +19,13 @@ class UploadFile extends Model
         'updated_by',
         'deleted_by',
     ];
+
+    public function timeDiff()
+    {
+        $formatTime = $this->created_at->format('d/m/Y h:i A');
+        $diffTime = Carbon::parse($this->created_at)->diffForHumans();
+        return $formatTime . ' ( ' . $diffTime . ' )';
+    }
 
     public function creator()
     {
