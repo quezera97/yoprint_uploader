@@ -45,9 +45,6 @@ class ImportProductsJob implements ShouldQueue
             // using queue, so use queueimport
             Excel::queueImport(new ProductsImport($uploadedFile), $this->filePath);
 
-            $uploadedFile?->update([
-                'status' => FileStatus::COMPLETED->value,
-            ]);
         } catch (\Throwable $th) {
             Log::error('Import failed: ' . $th->getMessage(), ['exception' => $th]);
 

@@ -2,17 +2,21 @@
 
 namespace App\Imports;
 
+use App\Enums\FileStatus;
 use App\Models\Product;
-use Maatwebsite\Excel\Row;
 use App\Models\UploadFile;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Row;
 use Maatwebsite\Excel\Concerns\OnEachRow;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 
+
 // use OnEachRow to validate, skip row, update or create
 // use ToModel if no custom logic involved
 // class ProductsImport implements ToModel, WithHeadingRow, WithChunkReading
+
 class ProductsImport implements OnEachRow, WithHeadingRow, WithChunkReading, ShouldQueue
 {
     protected $uploadedFile;
@@ -24,12 +28,9 @@ class ProductsImport implements OnEachRow, WithHeadingRow, WithChunkReading, Sho
 
     private function checkExist($row, $key)
     {
-        if(array_key_exists($key, $row)) {
-            return true;
-        }
-
-        return false;
+        return array_key_exists($key, $row);
     }
+
 
     private function cleanNonUTF8Char($value)
     {
@@ -69,13 +70,21 @@ class ProductsImport implements OnEachRow, WithHeadingRow, WithChunkReading, Sho
             ['uuid' => $productData['uuid']],
             $productData
         );
+
+        $this->uploadedFile->update([
+            'status' => FileStatus::COMPLETED->value,
+        ]);
     }
 
-    /**
-     * Use chonky
-     *
-     * @return int
-     */
+    public function failed(\Throwable $th)
+    {
+        Log::error('Import failed: ' . $th->getMessage(), ['exception' => $th]);
+
+        $this->uploadedFile?->update([
+            'status' => FileStatus::FAILED->value,
+        ]);
+    }
+
     public function chunkSize(): int
     {
         return 1000;

@@ -18,7 +18,7 @@ class Upload extends Component
     public $uploadedFile;
 
     protected $rules = [
-        'uploadedFile' => 'required|file|mimes:csv,txt|max:51200',
+        'uploadedFile' => 'required|file|mimes:csv,xlsx|max:51200',
     ];
 
     public function render()
