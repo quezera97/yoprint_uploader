@@ -13,7 +13,13 @@ return new class extends Migration
     {
         Schema::create('upload_files', function (Blueprint $table) {
             $table->id();
-            $table->string('status')->nullable();
+            $table->string('file_name')->nullable();
+            $table->enum('status', ['Pending', 'Processing', 'Failed', 'Completed'])->default('Pending');
+
+            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->onDelete('set null');
+
             $table->timestamps();
         });
     }
