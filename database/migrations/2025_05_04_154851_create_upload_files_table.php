@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('file_name')->nullable();
             $table->enum('status', ['Pending', 'Processing', 'Failed', 'Completed'])->default('Pending');
+            $table->string('file_path')->nullable();
 
             $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
             $table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('set null');

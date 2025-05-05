@@ -8,8 +8,7 @@ use Livewire\Component;
 
 class Table extends Component
 {
-    public $count = 0;
-    public $uploadedFile = [];
+    public $uploadedFile;
 
     protected function transformUploadedFile($file)
     {
@@ -25,8 +24,8 @@ class Table extends Component
 
     public function mount()
     {
-        CheckRedisQueue::dispatch();
-        $this->uploadedFile = $this->refreshUploadedFile();
+        // CheckRedisQueue::dispatch();
+        $this->refreshUploadedFile();
     }
 
     public function render()

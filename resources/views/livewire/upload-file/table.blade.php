@@ -1,7 +1,8 @@
 
 
 <div class="relative overflow-x-auto shadow-md sm:rounded-lg w-full">
-    <table wire:poll.5s="refreshUploadedFile" class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+    <table wire:poll="refreshUploadedFile" class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+    {{-- <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"> --}}
         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
                 <th scope="col" class="px-6 py-3">
@@ -28,13 +29,13 @@
                         {{ $loop->iteration }}
                     </td>
                     <td class="px-6 py-4">
-                        {{ $file->time }}
+                        {{ $file['time'] }}
                     </td>
                     <td class="px-6 py-4">
-                        {{ $file->file_name }}
+                        {{ $file['file_name'] }}
                     </td>
                     <td class="px-6 py-4">
-                        {{ $file->status }}
+                        {{ $file['status'] }}
                     </td>
                     <td class="px-6 py-4">
                         MEOW

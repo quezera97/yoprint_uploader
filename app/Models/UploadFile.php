@@ -13,6 +13,7 @@ class UploadFile extends Model
     protected $fillable = [
         'file_name',
         'status',
+        'file_path',
         'created_by',
         'updated_by',
         'deleted_by',
@@ -31,5 +32,10 @@ class UploadFile extends Model
     public function deleter()
     {
         return $this->belongsTo(User::class, 'deleted_by');
+    }
+
+    public function products()
+    {
+        return $this->hasMany(Product::class, 'upload_file_id');
     }
 }
